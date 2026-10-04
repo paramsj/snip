@@ -131,7 +131,12 @@ func (s *Server) createLink(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) follow(w http.ResponseWriter, r *http.Request) {
 	link := s.store.Get(r.PathValue("code"))
-	if link.ExpiresAt != nil && time.Now().Before(*link.ExpiresAt) {
+
+	if link == nil {
+		writeError(w, http.StatusNotFound, "This link was not found.")
+		return
+	}
+	if link.ExpiresAt != nil && time.Now().After(*link.ExpiresAt) {
 		writeError(w, http.StatusGone, "This link has expired.")
 		return
 	}
